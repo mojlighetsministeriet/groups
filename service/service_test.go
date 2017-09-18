@@ -15,6 +15,6 @@ func TestServiceInitialize(test *testing.T) {
 	defer os.Remove(storage)
 
 	identityService := service.Service{}
-	err = identityService.Initialize("sqlite3", storage)
+	err := identityService.Initialize("sqlite3", storage)
 	assert.NoError(test, err)
 }
