@@ -21,7 +21,7 @@ type Service struct {
 	PublicKey          *rsa.PublicKey
 }
 
-// Initialize will prepeare the service by connecting to database and creating a web server instance (but it will not start listening until service.Listen() is run)
+// Initialize will prepeare the service by connecting to database and Creating a web server instance (but it will not start listening until service.Listen() is run)
 func (service *Service) Initialize(identityProviderURL string, databaseType string, databaseConnectionString string) (err error) {
 	service.Router = echo.New()
 
@@ -63,7 +63,7 @@ func (service *Service) Initialize(identityProviderURL string, databaseType stri
 	return
 }
 
-func (service *Service) createGroup(context echo.Context) error {
+func (service *Service) CreateGroup(context echo.Context) error {
 	group := entity.Group{}
 	err := context.Bind(&group)
 	if err != nil {
@@ -83,6 +83,114 @@ func (service *Service) createGroup(context echo.Context) error {
 	}
 
 	return context.JSON(http.StatusCreated, group)
+}
+
+func (service *Service) UpdateGroup(context echo.Context) error {
+	group := entity.Group{}
+	err := service.DatabaseConnection.Where("id = ?", context.Param("id")).Find(&group).Error
+	if err != nil {
+		return context.JSONBlob(http.StatusBadRequest, []byte("{\"message\":\"Not Found\"}"))
+	}
+
+	err = context.Bind(&group)
+	if err != nil {
+		return context.JSONBlob(http.StatusBadRequest, []byte("{\"message\":\"Bad Request\"}"))
+	}
+
+	validate := validator.New()
+	err = validate.Struct(group)
+	if err != nil {
+		return context.JSONBlob(http.StatusBadRequest, []byte("{\"message\":\"Bad Request\"}"))
+	}
+
+	err = service.DatabaseConnection.Save(&group).Error
+	if err != nil {
+		service.Log.Error(err)
+		return context.JSONBlob(http.StatusInternalServerError, []byte("{\"message\":\"Internal Server Error\"}"))
+	}
+
+	return context.JSON(http.StatusOK, group)
+}
+
+func (service *Service) DeleteGroup(context echo.Context) error {
+	group := entity.Group{}
+	err := service.DatabaseConnection.Where("id = ?", context.Param("id")).Find(&group).Error
+	if err != nil {
+		return context.JSONBlob(http.StatusBadRequest, []byte("{\"message\":\"Not Found\"}"))
+	}
+
+	err = service.DatabaseConnection.Save(&group).Error
+	if err != nil {
+		service.Log.Error(err)
+		return context.JSONBlob(http.StatusInternalServerError, []byte("{\"message\":\"Internal Server Error\"}"))
+	}
+
+	return context.JSON(http.StatusOK, group)
+}
+
+func (service *Service) CreateProject(context echo.Context) error {
+	project := entity.Project{}
+	err := context.Bind(&project)
+	if err != nil {
+		return context.JSONBlob(http.StatusBadRequest, []byte("{\"message\":\"Bad Request\"}"))
+	}
+
+	validate := validator.New()
+	err = validate.Struct(project)
+	if err != nil {
+		return context.JSONBlob(http.StatusBadRequest, []byte("{\"message\":\"Bad Request\"}"))
+	}
+
+	err = service.DatabaseConnection.Create(&project).Error
+	if err != nil {
+		service.Log.Error(err)
+		return context.JSONBlob(http.StatusInternalServerError, []byte("{\"message\":\"Internal Server Error\"}"))
+	}
+
+	return context.JSON(http.StatusCreated, project)
+}
+
+func (service *Service) UpdateProject(context echo.Context) error {
+	project := entity.Project{}
+	err := service.DatabaseConnection.Where("id = ?", context.Param("id")).Find(&project).Error
+	if err != nil {
+		return context.JSONBlob(http.StatusBadRequest, []byte("{\"message\":\"Not Found\"}"))
+	}
+
+	err = context.Bind(&project)
+	if err != nil {
+		return context.JSONBlob(http.StatusBadRequest, []byte("{\"message\":\"Bad Request\"}"))
+	}
+
+	validate := validator.New()
+	err = validate.Struct(project)
+	if err != nil {
+		return context.JSONBlob(http.StatusBadRequest, []byte("{\"message\":\"Bad Request\"}"))
+	}
+
+	err = service.DatabaseConnection.Save(&project).Error
+	if err != nil {
+		service.Log.Error(err)
+		return context.JSONBlob(http.StatusInternalServerError, []byte("{\"message\":\"Internal Server Error\"}"))
+	}
+
+	return context.JSON(http.StatusOK, project)
+}
+
+func (service *Service) DeleteProject(context echo.Context) error {
+	project := entity.Project{}
+	err := service.DatabaseConnection.Where("id = ?", context.Param("id")).Find(&project).Error
+	if err != nil {
+		return context.JSONBlob(http.StatusBadRequest, []byte("{\"message\":\"Not Found\"}"))
+	}
+
+	err = service.DatabaseConnection.Save(&project).Error
+	if err != nil {
+		service.Log.Error(err)
+		return context.JSONBlob(http.StatusInternalServerError, []byte("{\"message\":\"Internal Server Error\"}"))
+	}
+
+	return context.JSON(http.StatusOK, project)
 }
 
 // Listen will make the service start listning for incoming requests

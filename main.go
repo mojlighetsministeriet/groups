@@ -27,7 +27,18 @@ func createGroupResource(groupService *Service) {
 	groupResource := groupService.Router.Group("/group")
 	groupResource.Use(jwt.RequiredRoleMiddleware(groupService.PublicKey, "user"))
 
-	groupResource.POST("", groupService.createGroup)
+	groupResource.POST("", groupService.CreateGroup)
+	groupResource.PUT(":id", groupService.UpdateGroup)
+	groupResource.DELETE(":id", groupService.DeleteGroup)
+}
+
+func createProjectResource(groupService *Service) {
+	projectResource := groupService.Router.Group("/group")
+	projectResource.Use(jwt.RequiredRoleMiddleware(groupService.PublicKey, "user"))
+
+	projectResource.POST("", groupService.CreateProject)
+	projectResource.PUT(":id", groupService.UpdateProject)
+	projectResource.DELETE(":id", groupService.DeleteProject)
 }
 
 func main() {
@@ -41,6 +52,7 @@ func main() {
 	defer groupService.Close()
 
 	createGroupResource(groupService)
+	createProjectResource(groupService)
 
 	err = groupService.Listen(":1323")
 	if err != nil {
