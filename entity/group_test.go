@@ -12,23 +12,19 @@ import (
 
 func TestGroupBeforeSave(test *testing.T) {
 	group := entity.Group{
-		Projects: []string{"b25eb146-6a97-405d-b1d9-5ea0ca5e9866", "8d9741da-5d8d-4269-b5f0-93624f154ae4"},
-		Members:  []string{"7c935ca4-768b-4a76-ae21-bed3d218a5e0", "f68be5ab-1fca-4924-88d2-3a85042a5f42"},
+		Members: []string{"7c935ca4-768b-4a76-ae21-bed3d218a5e0", "f68be5ab-1fca-4924-88d2-3a85042a5f42"},
 	}
 	assert.Equal(test, 0, len(group.ID))
 	group.BeforeSave()
 	assert.Equal(test, 36, len(group.ID))
-	assert.Equal(test, "b25eb146-6a97-405d-b1d9-5ea0ca5e9866,8d9741da-5d8d-4269-b5f0-93624f154ae4", group.ProjectsSerialized)
 	assert.Equal(test, "7c935ca4-768b-4a76-ae21-bed3d218a5e0,f68be5ab-1fca-4924-88d2-3a85042a5f42", group.MembersSerialized)
 }
 
 func TestGroupAfterFind(test *testing.T) {
 	group := entity.Group{
-		ProjectsSerialized: "b25eb146-6a97-405d-b1d9-5ea0ca5e9866,8d9741da-5d8d-4269-b5f0-93624f154ae4",
-		MembersSerialized:  "7c935ca4-768b-4a76-ae21-bed3d218a5e0,f68be5ab-1fca-4924-88d2-3a85042a5f42",
+		MembersSerialized: "7c935ca4-768b-4a76-ae21-bed3d218a5e0,f68be5ab-1fca-4924-88d2-3a85042a5f42",
 	}
 	group.AfterFind()
-	assert.Equal(test, []string{"b25eb146-6a97-405d-b1d9-5ea0ca5e9866", "8d9741da-5d8d-4269-b5f0-93624f154ae4"}, group.Projects)
 	assert.Equal(test, []string{"7c935ca4-768b-4a76-ae21-bed3d218a5e0", "f68be5ab-1fca-4924-88d2-3a85042a5f42"}, group.Members)
 }
 

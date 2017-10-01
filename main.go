@@ -4,22 +4,47 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/mssql"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
-	"github.com/mojlighetsministeriet/groups/service"
+	"github.com/mojlighetsministeriet/identity-provider/service"
 	"github.com/mojlighetsministeriet/utils"
+	"github.com/mojlighetsministeriet/utils/jwt"
 )
 
-func main() {
-	groupService := service.Service{}
-	err := groupService.Initialize(
+func createService() (groupService *service.Service, err error) {
+	groupService = &service.Service{}
+
+	err = groupService.Initialize(
+		utils.GetEnv("IDENTITY_PROVIDER_URL", "http://identity-provider"),
 		utils.GetEnv("DATABASE_TYPE", "mysql"),
-		utils.GetFileAsString("/run/secrets/database-connection", "user:password@/dbname?charset=utf8mb4,utf8&parseTime=True&loc=Europe/Stockholm"),
+		utils.GetEnv(
+			"DATABASE_CONNECTION",
+			utils.GetFileAsString("/run/secrets/database-connection", "user:password@/dbname?charset=utf8mb4,utf8&parseTime=True&loc=Europe/Stockholm"),
+		),
 	)
+
+	return
+}
+
+func createGroupResource(groupService *service.Service) {
+	groupResource := groupService.Router.Group("/group")
+	groupResource.Use(jwt.RequiredRoleMiddleware(groupService.PublicKey, "user"))
+
+	groupResource.POST("", groupService.createGroup)
+}
+
+func main() {
+	groupService, err := createService()
 	if err != nil {
-		groupService.Log.Error("Failed to initialize the service, make sure that you provided the correct database credentials.")
+		groupService.Log.Error("Failed to initialize the service, make sure that you provided the correct identity-provider URL and database credentials.")
 		groupService.Log.Error(err)
 		panic("Cannot continue due to previous errors.")
 	}
+
 	defer groupService.Close()
 
-	groupService.Listen(":1323")
+	createGroupResource(groupService)
+
+	err = groupService.Listen(":1323")
+	if err != nil {
+		panic(err)
+	}
 }
