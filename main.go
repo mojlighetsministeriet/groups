@@ -4,13 +4,12 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/mssql"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
-	"github.com/mojlighetsministeriet/identity-provider/service"
 	"github.com/mojlighetsministeriet/utils"
 	"github.com/mojlighetsministeriet/utils/jwt"
 )
 
-func createService() (groupService *service.Service, err error) {
-	groupService = &service.Service{}
+func createService() (groupService *Service, err error) {
+	groupService = &Service{}
 
 	err = groupService.Initialize(
 		utils.GetEnv("IDENTITY_PROVIDER_URL", "http://identity-provider"),
@@ -24,7 +23,7 @@ func createService() (groupService *service.Service, err error) {
 	return
 }
 
-func createGroupResource(groupService *service.Service) {
+func createGroupResource(groupService *Service) {
 	groupResource := groupService.Router.Group("/group")
 	groupResource.Use(jwt.RequiredRoleMiddleware(groupService.PublicKey, "user"))
 

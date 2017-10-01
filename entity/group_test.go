@@ -22,7 +22,7 @@ func TestGroupBeforeSave(test *testing.T) {
 
 func TestGroupAfterFind(test *testing.T) {
 	group := entity.Group{
-		MembersSerialized: "7c935ca4-768b-4a76-ae21-bed3d218a5e0,f68be5ab-1fca-4924-88d2-3a85042a5f42",
+		MembersSerialized:  "7c935ca4-768b-4a76-ae21-bed3d218a5e0,f68be5ab-1fca-4924-88d2-3a85042a5f42",
 	}
 	group.AfterFind()
 	assert.Equal(test, []string{"7c935ca4-768b-4a76-ae21-bed3d218a5e0", "f68be5ab-1fca-4924-88d2-3a85042a5f42"}, group.Members)

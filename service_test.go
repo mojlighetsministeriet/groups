@@ -7,7 +7,6 @@ import (
 
 	"github.com/jarcoal/httpmock"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
-	"github.com/mojlighetsministeriet/groups/service"
 	uuid "github.com/satori/go.uuid"
 	"github.com/stretchr/testify/assert"
 )
@@ -25,8 +24,8 @@ func TestServiceInitialize(test *testing.T) {
 	storage := "test-storage-" + uuid.NewV4().String() + ".db"
 	defer os.Remove(storage)
 
-	identityService := service.Service{}
-	err := identityService.Initialize("http://identity-provider", "sqlite3", storage)
+	service := Service{}
+	err := service.Initialize("http://identity-provider", "sqlite3", storage)
 	assert.NoError(test, err)
 }
 
@@ -43,8 +42,8 @@ func TestFailServiceInitializeWithBadPublicKey(test *testing.T) {
 	storage := "test-storage-" + uuid.NewV4().String() + ".db"
 	defer os.Remove(storage)
 
-	identityService := service.Service{}
-	err := identityService.Initialize("http://identity-provider", "sqlite3", storage)
+	service := Service{}
+	err := service.Initialize("http://identity-provider", "sqlite3", storage)
 	assert.Error(test, err)
 }
 
@@ -58,8 +57,8 @@ func TestFailServiceInitializeWithBadDatabaseCredentials(test *testing.T) {
 		httpmock.NewStringResponder(http.StatusOK, publicKeyPEMFixture),
 	)
 
-	identityService := service.Service{}
-	err := identityService.Initialize("http://identity-provider", "baddatabasetype", "badstoragepath")
+	service := Service{}
+	err := service.Initialize("http://identity-provider", "baddatabasetype", "badstoragepath")
 	assert.Error(test, err)
 }
 

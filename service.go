@@ -45,6 +45,11 @@ func (service *Service) Initialize(identityProviderURL string, databaseType stri
 		return
 	}
 
+	err = service.DatabaseConnection.AutoMigrate(&entity.GroupInvitation{}).Error
+	if err != nil {
+		return
+	}
+
 	err = service.DatabaseConnection.AutoMigrate(&entity.Project{}).Error
 	if err != nil {
 		return
