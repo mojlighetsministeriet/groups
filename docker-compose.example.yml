@@ -1,0 +1,105 @@
+version: "3.3"
+
+services:
+
+  groups:
+    image: mojlighetsministeriet/groups:master
+    ports:
+      - 80:80
+    depends_on:
+      - database
+    secrets:
+      - database-connection
+    environment:
+      IDENTITY_PROVIDER_URL: http://identity-provider
+    deploy:
+      replicas: 2
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: continue
+        monitor: 60s
+        max_failure_ratio: 0.3
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+    networks:
+      - backend
+
+  identity-provider:
+    image: mojlighetsministeriet/identity-provider:master
+    ports:
+      - 80:80
+    depends_on:
+      - database
+    secrets:
+      - private-key
+      - smtp-password
+      - database-connection
+    environment:
+      SMTP_HOST: smtp.glesys.se
+      SMTP_PORT: 587
+      SMTP_EMAIL: techsupport@mojlighetsministeriet.se
+    deploy:
+      replicas: 2
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: continue
+        monitor: 60s
+        max_failure_ratio: 0.3
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+    networks:
+      - backend
+
+  database:
+    image: mariadb:latest
+    ports:
+      - 3306:3306
+    volumes:
+      - database:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: eUYP0mjoTt8YqCJBxa0bcrfN1miLzA
+      MYSQL_DATABASE: identity-provider
+      MYSQL_USER: identity-provider
+      MYSQL_PASSWORD: eUYP0mjoTt8YqCJBxa0bcrfN1miLzA
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+    networks:
+      - backend
+
+  visualizer:
+    image: dockersamples/visualizer:stable
+    ports:
+      - 8080:8080
+    stop_grace_period: 1m30s
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+
+networks:
+  backend:
+    driver: overlay
+
+volumes:
+  database:
+
+secrets:
+  private-key:
+    external:
+      name: "private-key"
+  smtp-password:
+    external:
+      name: "smtp-password"
+  database-connection:
+    external:
+      name: "database-connection"

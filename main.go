@@ -54,7 +54,7 @@ func main() {
 	createGroupResource(groupService)
 	createProjectResource(groupService)
 
-	err = groupService.Listen(":1323")
+	err = groupService.Listen(":" + utils.GetEnv("PORT", "80"))
 	if err != nil {
 		panic(err)
 	}
