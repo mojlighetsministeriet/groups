@@ -8,6 +8,7 @@ import (
 
 	"github.com/jinzhu/gorm"
 	"github.com/labstack/echo"
+	"github.com/labstack/echo/middleware"
 	"github.com/labstack/gommon/log"
 	"github.com/mojlighetsministeriet/groups/entity"
 	"github.com/mojlighetsministeriet/utils/jwt"
@@ -24,6 +25,7 @@ type Service struct {
 // Initialize will prepeare the service by connecting to database and Creating a web server instance (but it will not start listening until service.Listen() is run)
 func (service *Service) Initialize(identityProviderURL string, databaseType string, databaseConnectionString string) (err error) {
 	service.Router = echo.New()
+	service.Router.Use(middleware.Gzip())
 
 	service.Log = service.Router.Logger
 	service.Log.SetLevel(log.INFO)
